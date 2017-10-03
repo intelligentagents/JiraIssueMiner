@@ -52,6 +52,8 @@ def getLink(link, maxi, dic, par, name):
 
 def getDetails(par, name):
     """Function to get the details of issues"""
+
+    os.system("git clone https://github.com/spring-projects/spring-framework")
     with open('temp/{}.json'.format(name)) as data_file:
         data = json.load(data_file)
 
@@ -105,6 +107,8 @@ def filter(json):
     dic["reportDate"] = json["fields"]["created"]
 
     dic["fixDate"] = json["fields"]["resolutiondate"]
+    # Still on tests
+    teste = os.system("git -C spring-framework log --after=2017-10-02T13:40:56 > log.log")
 
     return dic
 
@@ -139,3 +143,4 @@ elif(choosen == 3):
 elif(choosen == 4):
     print("Getting details of issues:")
     getDetails("bugs", "bugsUrls")
+
