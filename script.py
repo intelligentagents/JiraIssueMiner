@@ -86,10 +86,30 @@ def filter(json):
     dic["title"] = json["fields"]["summary"]
     dic["author"] = json["fields"]["creator"]["displayName"]
 
+    dic["reportDate"] = json["fields"]["created"]
+    dic["fixDate"] = json["fields"]["resolutiondate"]
+
+    os.system("git -C spring-framework log -1 --before={} > temp/log.log".format(json["fields"]["created"]))
+
+    arq = open('temp/log.log', 'r')
+    commit = arq.readlines()
+
     dic["commitReport"] = {}
-    dic["commitReport"]["name"] = json["fields"]["reporter"]["name"]
-    dic["commitReport"]["key"] = json["fields"]["reporter"]["key"]
-    dic["commitReport"]["emailAddress"] = json["fields"]["reporter"]["emailAddress"]
+    strCommit = str(commit[0]).split()
+    dic["commitReport"]["commitReport"] = strCommit[1]
+
+    if ("Author" in str(commit[1])):
+        strCommit = str(commit[1]).split(": ")
+    else:
+        strCommit = str(commit[2]).split(": ")
+
+    strCommit = str(strCommit[1]).split(" <")
+    dic["commitReport"]["nameReport"] = strCommit[0]
+
+    strCommit = strCommit[1].split(">")
+    dic["commitReport"]["emailReport"] = strCommit[0]
+
+    arq.close()
 
     dic["labels"] = json["fields"]["issuetype"]["name"]
 
@@ -103,12 +123,6 @@ def filter(json):
         dic["comments"] = comments
     else:
         dic["comments"] = []
-
-    dic["reportDate"] = json["fields"]["created"]
-
-    dic["fixDate"] = json["fields"]["resolutiondate"]
-    # Still on tests
-    teste = os.system("git -C spring-framework log --after=2017-10-02T13:40:56 > log.log")
 
     return dic
 
@@ -143,4 +157,3 @@ elif(choosen == 3):
 elif(choosen == 4):
     print("Getting details of issues:")
     getDetails("bugs", "bugsUrls")
-
