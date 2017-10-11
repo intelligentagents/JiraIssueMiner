@@ -39,6 +39,7 @@ def getLink(link, maxi, dic, par, name):
             dic = dic[par]
             with open('temp/{}.json'.format(name), 'w') as outfile:
                 json.dump(dic, outfile)
+            os.system("git clone https://github.com/spring-projects/spring-framework")
             break
 
         # show script progress in terminal
@@ -53,7 +54,6 @@ def getLink(link, maxi, dic, par, name):
 def getDetails(par, name):
     """Function to get the details of issues"""
 
-    os.system("git clone https://github.com/spring-projects/spring-framework")
     with open('temp/{}.json'.format(name)) as data_file:
         data = json.load(data_file)
 
@@ -123,6 +123,13 @@ def filter(json):
         dic["comments"] = comments
     else:
         dic["comments"] = []
+
+    before = json["fields"]["resolutiondate"]
+    after = json["fields"]["created"]
+
+    print(before)
+
+    os.system("git -C spring-framework log  --before={} --after={} > temp/log.log".format(before,after))
 
     return dic
 
