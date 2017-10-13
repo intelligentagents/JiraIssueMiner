@@ -7,6 +7,22 @@ import os
 from urllib.request import urlopen
 # ==============================================================================
 
+def commits(arq,key):
+    commit = ["",""]
+    for x in arq:
+        if(x[0:6] == "commit"):
+            commit[0] = x
+        elif(x[0:6] == "Author"):
+            commit[1] = x
+        else:
+            if(key in x):
+                return commit
+
+
+def datePlus(before):
+    plus = str(int(before[8:10]) + 1)
+    before = before[0:8] + plus
+    return before
 
 def request(url):
     """Function to make requirements"""
@@ -39,6 +55,10 @@ def getLink(link, maxi, dic, par, name):
             dic = dic[par]
             with open('temp/{}.json'.format(name), 'w') as outfile:
                 json.dump(dic, outfile)
+            try:
+                os.system("rm -rf spring-framework")
+            except:
+                pass
             os.system("git clone https://github.com/spring-projects/spring-framework")
             break
 
@@ -127,9 +147,43 @@ def filter(json):
     before = json["fields"]["resolutiondate"]
     after = json["fields"]["created"]
 
-    print(before)
+    os.system("git -C spring-framework log  --before={} --after={} > temp/log.log".format(datePlus(before),after))
 
-    os.system("git -C spring-framework log  --before={} --after={} > temp/log.log".format(before,after))
+    arq = open('temp/log.log', 'r')
+    commit = arq.readlines()
+    commitlist = commits(commit,json["key"])
+    arq.close()
+    dic["commitFix"] = {}
+    if (commitlist != None):
+        strCommit = str(commitlist[0]).split()
+        dic["commitFix"]["commitFix"] = strCommit[1]
+
+        strCommit = str(commitlist[1]).split(": ")
+        strCommit = str(strCommit[1]).split(" <")
+        dic["commitFix"]["nameFix"] = strCommit[0]
+
+        strCommit = strCommit[1].split(">")
+        dic["commitFix"]["emailFix"] = strCommit[0]
+        dic["TypeFix"] = "By Description"
+    else:
+        os.system("git -C spring-framework log -1 --before={} > temp/log.log".format(before))
+        arq = open('temp/log.log', 'r')
+        commit = arq.readlines()
+        arq.close()
+        strCommit = str(commit[0]).split()
+        dic["commitFix"]["commitFix"] = strCommit[1]
+
+        if ("Author" in str(commit[1])):
+            strCommit = str(commit[1]).split(": ")
+        else:
+            strCommit = str(commit[2]).split(": ")
+
+        strCommit = str(strCommit[1]).split(" <")
+        dic["commitFix"]["nameFix"] = strCommit[0]
+
+        strCommit = strCommit[1].split(">")
+        dic["commitFix"]["emailFix"] = strCommit[0]
+        dic["TypeFix"] = "By Date"
 
     return dic
 
